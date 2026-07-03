@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Esportes na Tela - Agenda Esportiva com IA</title>
+    
+    <!-- Google Fonts Premium -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    
+    <!-- html2canvas para exportação -->
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    
+    <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+    <!-- HEADER PREMIUM -->
+    <header class="header-premium">
+        <div class="header-container">
+            <div class="logo-area">
+                <div class="logo-icon">⚡</div>
+                <div class="logo-text">
+                    <span class="logo-title">Esportes na Tela</span>
+                    <span class="logo-subtitle">Agenda Esportiva com IA</span>
+                </div>
+            </div>
+            <nav class="header-nav">
+                <button class="nav-btn" onclick="abrirManual()">📖 Manual</button>
+                <button class="nav-btn premium" onclick="buscarComIA()">🤖 Buscar com IA</button>
+            </nav>
+            <div class="theme-toggle">
+                <button class="toggle-btn active" data-theme="dark" onclick="setTheme('dark')">🌙</button>
+                <button class="toggle-btn" data-theme="light" onclick="setTheme('light')">☀️</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- CONTAINER PRINCIPAL -->
+    <main class="main-container">
+        <!-- PAINEL ESQUERDO - CONTROLES -->
+        <aside class="panel-left">
+            <!-- Configuração IA -->
+            <section class="panel-section config-section">
+                <h3>🤖 Configuração IA</h3>
+                <div class="input-group">
+                    <input type="password" id="apiKey" placeholder="Chave da API Gemini" />
+                    <button class="btn-secondary" onclick="salvarApiKey()">Salvar</button>
+                </div>
+                <div class="quick-actions">
+                    <button class="btn-primary btn-full" onclick="buscarComIA()">
+                        🔍 Buscar eventos com IA
+                    </button>
+                </div>
+                <div id="statusIA" class="status-message"></div>
+
+                <label class="outros-label" style="margin-top: 14px;">URL da API de dados (opcional)</label>
+                <div class="input-group">
+                    <input type="text" id="apiDadosUrlInput" placeholder="ex: https://esportes-na-tela-api.SEU-USUARIO.workers.dev" />
+                    <button class="btn-secondary" onclick="salvarApiDadosUrl()">Salvar</button>
+                </div>
+                <p class="outros-descricao">Opcional — veja backend-worker/GUIA-DEPLOY.md. Quando configurada, a Tabela de Classificação e os escudos do Brasileirão (Séries A/B/C/D) usam essa fonte estruturada em vez da IA, o que é mais confiável.</p>
+            </section>
+
+            <!-- Filtros -->
+            <section class="panel-section filters-section">
+                <h3>📺 Filtros</h3>
+                <div class="filter-group">
+                    <label><input type="checkbox" value="tv-aberta" checked /> TV Aberta</label>
+                    <label><input type="checkbox" value="tv-fechada" checked /> TV Fechada</label>
+                    <label><input type="checkbox" value="streaming" checked /> Streaming</label>
+                    <label><input type="checkbox" value="youtube" checked /> YouTube</label>
+                </div>
+                <label class="outros-label" style="margin-top: 14px;">
+                    <input type="checkbox" id="toggleEscudos" onchange="alternarEscudos()" style="width: auto; accent-color: var(--primary); margin-right: 6px;" />
+                    🖼️ Mostrar escudos dos times (beta, via Wikipédia)
+                </label>
+            </section>
+
+            <!-- Lista de Eventos -->
+            <section class="panel-section events-section">
+                <h3>📋 Eventos do Dia</h3>
+                <div class="events-controls">
+                    <button class="btn-add" onclick="abrirModalJogo()">+ Adicionar</button>
+                    <button class="btn-clear" onclick="limparEventos()">🗑️ Limpar</button>
+                </div>
+                <div id="listaJogos" class="events-list"></div>
+            </section>
+
+            <!-- Outros Conteúdos (tabelas, resultados, artilharia etc.) -->
+            <section class="panel-section outros-section">
+                <h3>🗂️ Outros Conteúdos</h3>
+
+                <label class="outros-label">Tipo de conteúdo</label>
+                <select id="tipoConteudo" class="outros-select" onchange="atualizarTipoConteudo()">
+                    <option value="tabela">🏆 Tabela de Classificação</option>
+                    <option value="resultados">✅ Resultados do Dia Anterior</option>
+                    <option value="previa">🔥 Prévia da Rodada</option>
+                    <option value="artilharia">🎯 Artilharia</option>
+                    <option value="proximaRodada">📅 Próxima Rodada (de um time)</option>
+                    <option value="ondeAssistir">📺 Onde Assistir (por plataforma)</option>
+                    <option value="curiosidade">💡 Você Sabia? / Curiosidades</option>
+                    <option value="resumoSemanal">📆 Resumo Semanal</option>
+                    <option value="aniversario">🎂 Aniversário do Clube</option>
+                </select>
+
+                <label class="outros-label" id="labelCampeonato">Campeonato</label>
+                <input type="text" id="campeonatoConteudo" placeholder="ex: Brasileirão Série A 2026" />
+
+                <p id="descricaoConteudo" class="outros-descricao"></p>
+
+                <button class="btn-primary btn-full" onclick="gerarOutroConteudo()">🔍 Gerar conteúdo</button>
+
+                <div id="statusOutros" class="status-message">Aguardando busca...</div>
+            </section>
+        </aside>
+
+        <!-- PAINEL DIREITO - VISUALIZAÇÃO -->
+        <section class="panel-right">
+            <!-- Cards de Programação -->
+            <div class="cards-section">
+                <div class="cards-header">
+                    <h2>📺 Programação Esportiva</h2>
+                    <div class="cards-actions">
+                        <button class="btn-outline" onclick="gerarCards()">🔄 Gerar Cards</button>
+                        <button class="btn-success" onclick="baixarTodosCards()">📥 Baixar Todos</button>
+                    </div>
+                    <div class="credit-input">
+                        <label>Créditos:</label>
+                        <input type="text" id="creditosInput" value="@esportesnatela" />
+                    </div>
+                </div>
+                <div id="cardsContainer" class="cards-container"></div>
+            </div>
+
+            <!-- Textos para Redes Sociais -->
+            <div class="texts-section">
+                <h3>📝 Textos para Redes Sociais</h3>
+                <div class="social-tabs">
+                    <button class="tab-btn active" data-tab="whatsapp">💬 WhatsApp</button>
+                    <button class="tab-btn" data-tab="twitter">🐦 Twitter/X</button>
+                    <button class="tab-btn" data-tab="instagram">📸 Instagram</button>
+                    <button class="tab-btn" data-tab="facebook">📘 Facebook</button>
+                    <button class="tab-btn" data-tab="bluesky">🦋 Bluesky</button>
+                    <button class="tab-btn" data-tab="threads">🧵 Threads</button>
+                </div>
+                <div id="textoContainer" class="texto-output"></div>
+                <button class="btn-copy" onclick="copiarTexto()">📋 Copiar texto</button>
+            </div>
+
+            <!-- Outros Conteúdos gerados (tabela de classificação etc.) -->
+            <div class="outros-conteudo-section" id="outrosConteudoWrapper" style="display: none;">
+                <div class="cards-header">
+                    <h2>🗂️ Conteúdo Gerado</h2>
+                    <div class="cards-actions">
+                        <button class="btn-success" onclick="baixarOutroConteudo()">📥 Baixar imagem</button>
+                    </div>
+                </div>
+                <div id="outrosConteudoContainer"></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- MODAL PARA ADICIONAR JOGO -->
+    <div id="modalJogo" class="modal-overlay">
+        <div class="modal-content">
+            <h3>➕ Adicionar Evento</h3>
+            <form id="formJogo" onsubmit="salvarJogo(event)">
+                <input type="hidden" id="editId" />
+                <div class="form-group">
+                    <label>Hora</label>
+                    <input type="text" id="jogoHora" placeholder="Ex: 15h00" required />
+                </div>
+                <div class="form-group">
+                    <label>Evento</label>
+                    <input type="text" id="jogoEvento" placeholder="Ex: GP de Mônaco - Classificação" required />
+                </div>
+                <div class="form-group">
+                    <label>Campeonato</label>
+                    <input type="text" id="jogoCampeonato" placeholder="Ex: Fórmula 1" required />
+                </div>
+                <div class="form-group">
+                    <label>Canal</label>
+                    <input type="text" id="jogoCanal" placeholder="Ex: Band, F1 TV" required />
+                </div>
+                <div class="form-group">
+                    <label>Categoria</label>
+                    <select id="jogoCategoria">
+                        <option value="Motor">🏎️ Motor</option>
+                        <option value="Quadras">🏀 Quadras</option>
+                        <option value="Campo">⚽ Campo</option>
+                        <option value="Combate">🥊 Combate</option>
+                        <option value="Outros">🎯 Outros</option>
+                    </select>
+                </div>
+                <div class="form-group form-group-checkbox">
+                    <label><input type="checkbox" id="jogoDestaque" /> 🏆 Evento de destaque (ganha card próprio, ex: Copa do Mundo, final)</label>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="fecharModal()">Cancelar</button>
+                    <button type="submit" class="btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- TOAST DE NOTIFICAÇÃO -->
+    <div id="toast" class="toast"></div>
+
+    <!-- SCRIPTS -->
+    <script src="js/eventos-utils.js"></script>
+    <script src="js/api-dados.js"></script>
+    <script src="js/escudos.js"></script>
+    <script src="js/jogos-manager.js"></script>
+    <script src="js/ia-buscar.js"></script>
+    <script src="js/cards-renderer.js"></script>
+    <script src="js/textos-gerador.js"></script>
+    <script src="js/exportador.js"></script>
+    <script src="js/outros-conteudos.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

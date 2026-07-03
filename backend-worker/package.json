@@ -1,0 +1,16 @@
+{
+  "name": "esportes-na-tela-worker",
+  "version": "1.0.0",
+  "private": true,
+  "description": "API gratuita (Cloudflare Worker) que expõe tabela, rodada e escudos do Campeonato Brasileiro para o sistema Esportes na Tela.",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "dependencies": {
+    "campeonato-brasileiro-api": "^2.0.1"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}

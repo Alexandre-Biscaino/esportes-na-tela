@@ -1,0 +1,1311 @@
+/* ========================================
+   ROOT VARIABLES - DESIGN SYSTEM
+   ======================================== */
+:root {
+    /* Cores Primárias */
+    --primary: #6c2bd9;
+    --primary-dark: #4a1a8a;
+    --primary-light: #8b5cf6;
+    --primary-gradient: linear-gradient(135deg, #6c2bd9, #8b5cf6);
+    
+    /* Cores por Categoria */
+    --motor-color: #ff3300;
+    --quadras-color: #ff8800;
+    --campo-color: #00cc44;
+    --combate-color: #ffd700;
+    --outros-color: #aa00ff;
+    
+    /* Tema Escuro (padrão) */
+    --bg-primary: #0a0a12;
+    --bg-secondary: #13131f;
+    --bg-card: #1a1a2e;
+    --bg-card-hover: #252540;
+    --bg-input: #0e0e1a;
+    --text-primary: #ffffff;
+    --text-secondary: #a8a8c8;
+    --text-muted: #6a6a8a;
+    --border-color: #2a2a44;
+    --shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+    --shadow-glow: 0 0 40px rgba(108, 43, 217, 0.15);
+    --card-bg: rgba(26, 26, 46, 0.8);
+    --card-border: rgba(255, 255, 255, 0.06);
+    --overlay: rgba(0, 0, 0, 0.8);
+    
+    /* Fontes */
+    --font-display: 'Oswald', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --radius: 16px;
+    --radius-sm: 8px;
+}
+
+/* ========================================
+   TEMA CLARO
+   ======================================== */
+[data-theme="light"] {
+    --bg-primary: #f5f5fa;
+    --bg-secondary: #ffffff;
+    --bg-card: #ffffff;
+    --bg-card-hover: #f0f0f5;
+    --bg-input: #f0f0f5;
+    --text-primary: #1a1a2e;
+    --text-secondary: #4a4a6a;
+    --text-muted: #8888aa;
+    --border-color: #e0e0ea;
+    --shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    --shadow-glow: 0 0 40px rgba(108, 43, 217, 0.08);
+    --card-bg: rgba(255, 255, 255, 0.9);
+    --card-border: rgba(0, 0, 0, 0.06);
+    --overlay: rgba(255, 255, 255, 0.9);
+}
+
+/* ========================================
+   RESET & BASE
+   ======================================== */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: var(--font-body);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    min-height: 100vh;
+    transition: background 0.4s ease, color 0.4s ease;
+    overflow-x: hidden;
+}
+
+/* ========================================
+   TOGGLE DE TEMA
+   ======================================== */
+.theme-toggle {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 30px;
+    padding: 4px;
+    display: flex;
+    gap: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.theme-toggle .toggle-btn {
+    background: transparent;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.theme-toggle .toggle-btn.active {
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 2px 12px rgba(108, 43, 217, 0.3);
+}
+
+.theme-toggle .toggle-btn:hover:not(.active) {
+    color: var(--text-primary);
+}
+
+/* ========================================
+   HEADER PREMIUM
+   ======================================== */
+.header-premium {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    padding: 12px 24px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(20px);
+    transition: background 0.4s ease;
+}
+
+.header-container {
+    max-width: 1440px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.logo-area {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo-icon {
+    font-size: 28px;
+    background: var(--primary-gradient);
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 22px;
+}
+
+.logo-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 22px;
+    letter-spacing: -0.5px;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.logo-subtitle {
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-weight: 400;
+    display: block;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.header-nav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.nav-btn {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 8px 18px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.nav-btn:hover {
+    background: var(--bg-card-hover);
+    color: var(--text-primary);
+    border-color: var(--primary);
+}
+
+.nav-btn.premium {
+    background: var(--primary-gradient);
+    border-color: var(--primary);
+    color: white;
+}
+
+.nav-btn.premium:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 20px rgba(108, 43, 217, 0.4);
+}
+
+/* ========================================
+   MAIN LAYOUT
+   ======================================== */
+.main-container {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 24px;
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 24px;
+    min-height: calc(100vh - 80px);
+}
+
+@media (max-width: 1200px) {
+    .main-container {
+        grid-template-columns: 1fr;
+    }
+    .panel-left {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+    .panel-left .events-section {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 768px) {
+    .header-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .header-nav {
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+    .main-container { padding: 12px; }
+    .panel-left { grid-template-columns: 1fr; }
+    .panel-right { gap: 16px; }
+}
+
+/* ========================================
+   PAINEL ESQUERDO
+   ======================================== */
+.panel-left {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.panel-section {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 20px;
+    transition: all 0.3s ease;
+}
+
+.panel-section:hover {
+    border-color: rgba(108, 43, 217, 0.3);
+}
+
+.panel-section h3 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 16px;
+    letter-spacing: 0.5px;
+    margin-bottom: 14px;
+    color: var(--text-primary);
+}
+
+.input-group {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.input-group input {
+    flex: 1;
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    color: var(--text-primary);
+    font-size: 13px;
+    transition: all 0.3s ease;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(108, 43, 217, 0.2);
+}
+
+.btn-secondary {
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 10px 16px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 13px;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.btn-secondary:hover {
+    background: var(--bg-card-hover);
+    color: var(--text-primary);
+    border-color: var(--primary);
+}
+
+.btn-primary {
+    background: var(--primary-gradient);
+    border: none;
+    color: white;
+    padding: 12px 20px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(108, 43, 217, 0.35);
+}
+
+.btn-full { width: 100%; }
+
+.status-message {
+    margin-top: 12px;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    display: none;
+}
+
+.status-message.loading {
+    display: block;
+    background: rgba(108, 43, 217, 0.15);
+    color: var(--primary-light);
+    border: 1px solid rgba(108, 43, 217, 0.2);
+}
+
+.status-message.success {
+    display: block;
+    background: rgba(0, 204, 68, 0.12);
+    color: #00cc44;
+    border: 1px solid rgba(0, 204, 68, 0.2);
+}
+
+.status-message.error {
+    display: block;
+    background: rgba(255, 51, 0, 0.12);
+    color: #ff3300;
+    border: 1px solid rgba(255, 51, 0, 0.2);
+}
+
+.filter-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.filter-group label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 4px 12px;
+    border-radius: 20px;
+    background: var(--bg-input);
+    transition: all 0.3s ease;
+}
+
+.filter-group label:hover {
+    background: var(--bg-card-hover);
+    color: var(--text-primary);
+}
+
+.filter-group input[type="checkbox"] {
+    accent-color: var(--primary);
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.events-controls {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.btn-add {
+    background: var(--primary-gradient);
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    transition: all 0.3s ease;
+}
+
+.btn-add:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(108, 43, 217, 0.3);
+}
+
+.btn-clear {
+    background: transparent;
+    border: 1px solid #ff3300;
+    color: #ff3300;
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 13px;
+    transition: all 0.3s ease;
+}
+
+.btn-clear:hover {
+    background: rgba(255, 51, 0, 0.1);
+}
+
+.events-list {
+    max-height: 400px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.events-list::-webkit-scrollbar { width: 4px; }
+.events-list::-webkit-scrollbar-track { background: var(--bg-input); }
+.events-list::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
+
+.event-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    background: var(--bg-input);
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--primary);
+    transition: all 0.3s ease;
+}
+
+.event-item:hover { background: var(--bg-card-hover); }
+
+.event-item .event-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.event-item .event-time { font-weight: 600; font-size: 13px; color: var(--text-primary); }
+.event-item .event-name { font-size: 12px; color: var(--text-secondary); }
+.event-item .event-channel { font-size: 11px; color: var(--text-muted); }
+
+.event-item .link-verificar {
+    display: inline-block;
+    margin-top: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--primary);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    width: fit-content;
+}
+.event-item .link-verificar:hover { opacity: 0.75; }
+
+.event-item .event-actions { display: flex; gap: 6px; }
+.event-item .event-actions button {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+.event-item .event-actions button:hover { color: var(--text-primary); background: var(--bg-card-hover); }
+.event-item .event-actions .btn-delete:hover { color: #ff3300; }
+
+/* ========================================
+   PAINEL DIREITO
+   ======================================== */
+.panel-right {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.cards-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.cards-header h2 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 24px;
+    letter-spacing: 0.5px;
+}
+
+.cards-actions {
+    display: flex;
+    gap: 10px;
+    margin-left: auto;
+}
+
+.btn-outline {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 8px 18px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 13px;
+    transition: all 0.3s ease;
+}
+
+.btn-outline:hover {
+    background: var(--bg-card-hover);
+    color: var(--text-primary);
+    border-color: var(--primary);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #00cc44, #009933);
+    border: none;
+    color: white;
+    padding: 8px 18px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    transition: all 0.3s ease;
+}
+
+.btn-success:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 20px rgba(0, 204, 68, 0.35);
+}
+
+.credit-input {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.credit-input label {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.credit-input input {
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 6px 12px;
+    color: var(--text-primary);
+    font-size: 13px;
+    width: 140px;
+}
+
+.credit-input input:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+/* ========================================
+   CARDS PREMIUM - ESTILOS PRINCIPAIS
+   ======================================== */
+.cards-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: flex-start;
+    padding: 4px;
+}
+
+.card-esportivo {
+    width: 340px;
+    /* Sem altura mínima fixa: o card cresce ou encolhe de acordo com a
+       quantidade de eventos (1 jogo de F1 não fica com espaço vazio embaixo,
+       15 jogos de futebol não ficam espremidos). Vale para qualquer esporte. */
+    min-height: 190px;
+    display: flex;
+    flex-direction: column;
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: default;
+    border: 1px solid var(--card-border);
+    background: var(--card-bg);
+    backdrop-filter: blur(12px);
+    box-shadow: var(--shadow);
+}
+
+.card-esportivo:hover {
+    transform: translateY(-6px) scale(1.01);
+    box-shadow: var(--shadow), var(--shadow-glow);
+}
+
+.card-esportivo .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.card-esportivo .card-badge {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+}
+
+.card-esportivo .card-date {
+    font-size: 11px;
+    opacity: 0.7;
+    font-weight: 400;
+}
+
+.card-esportivo .card-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 28px;
+    letter-spacing: -0.5px;
+    margin-bottom: 16px;
+    line-height: 1.15;
+    word-break: break-word;
+}
+
+/* Aplicado via JS quando o título (nome do campeonato em destaque) é longo,
+   para não estourar a largura fixa do card em nenhum esporte */
+.card-esportivo .card-title.titulo-compacto {
+    font-size: 21px;
+}
+
+.card-esportivo .card-events {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.card-esportivo .event-line {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--card-border);
+}
+
+.card-esportivo .event-line:last-child { border-bottom: none; }
+
+.card-esportivo .event-line-top {
+    display: flex;
+    align-items: center;
+}
+
+.card-esportivo .event-time {
+    font-weight: 600;
+    font-size: 15px;
+    min-width: 55px;
+}
+
+.card-esportivo .event-name {
+    font-size: 14px;
+    font-weight: 500;
+    flex: 1;
+    padding: 0 0 0 12px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    min-width: 0;
+}
+
+.card-esportivo .escudo-time {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    flex-shrink: 0;
+    border-radius: 3px;
+}
+
+.card-esportivo .time-nome {
+    white-space: nowrap;
+}
+
+.card-esportivo .evento-x {
+    opacity: 0.5;
+    font-size: 12px;
+    flex-shrink: 0;
+}
+
+/* Canal de transmissão como badge/pill, sempre na linha de baixo — padrão
+   único pra todo evento, de qualquer esporte, independente do tamanho do
+   nome do canal (evita a inconsistência de uns ficarem do lado e outros embaixo) */
+.card-esportivo .event-channel-badge {
+    align-self: flex-start;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid currentColor;
+    white-space: normal;
+    line-height: 1.4;
+}
+
+.card-esportivo .card-footer {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--card-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 10px;
+    opacity: 0.6;
+    letter-spacing: 0.5px;
+}
+
+.card-esportivo .card-footer .credit { text-transform: uppercase; }
+.card-esportivo .card-footer .disclaimer { font-size: 8px; opacity: 0.5; }
+
+/* ========================================
+   TEMAS DOS CARDS
+   ======================================== */
+.card-motor .card-badge { background: rgba(255, 51, 0, 0.2); color: #ff3300; }
+.card-motor .card-title { color: #ff3300; }
+.card-motor .event-time,
+.card-motor .event-channel-badge { color: #ff3300; }
+
+.card-quadras .card-badge { background: rgba(255, 136, 0, 0.2); color: #ff8800; }
+.card-quadras .card-title { color: #ff8800; }
+.card-quadras .event-time,
+.card-quadras .event-channel-badge { color: #ff8800; }
+
+.card-campo .card-badge { background: rgba(0, 204, 68, 0.2); color: #00cc44; }
+.card-campo .card-title { color: #00cc44; }
+.card-campo .event-time,
+.card-campo .event-channel-badge { color: #00cc44; }
+
+.card-combate .card-badge { background: rgba(255, 215, 0, 0.2); color: #ffd700; }
+.card-combate .card-title { color: #ffd700; }
+.card-combate .event-time,
+.card-combate .event-channel-badge { color: #ffd700; }
+
+.card-outros .card-badge { background: rgba(170, 0, 255, 0.2); color: #aa00ff; }
+.card-outros .card-title { color: #aa00ff; }
+.card-outros .event-time,
+.card-outros .event-channel-badge { color: #aa00ff; }
+
+/* Card de DESTAQUE — eventos marcados manualmente ou pela IA como grande
+   relevância (Copa do Mundo, finais, clássicos decisivos) ganham um card
+   próprio com tema dourado, como no exemplo de referência. */
+.card-destaque {
+    background: linear-gradient(180deg, rgba(255, 215, 0, 0.07), var(--card-bg) 60%);
+    border-color: rgba(255, 215, 0, 0.25);
+}
+.card-destaque .card-badge { background: rgba(255, 215, 0, 0.18); color: #ffd700; }
+.card-destaque .card-title { color: #ffd700; }
+.card-destaque .event-time,
+.card-destaque .event-channel-badge { color: #ffd700; }
+
+/* ========================================
+   TEXTOS PARA REDES SOCIAIS
+   ======================================== */
+.texts-section {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 20px;
+}
+
+.texts-section h3 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 14px;
+}
+
+.social-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.tab-btn {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 6px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.tab-btn:hover {
+    background: var(--bg-card-hover);
+    color: var(--text-primary);
+}
+
+.tab-btn.active {
+    background: var(--primary-gradient);
+    border-color: var(--primary);
+    color: white;
+}
+
+.texto-output {
+    background: var(--bg-input);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    min-height: 120px;
+    max-height: 300px;
+    overflow-y: auto;
+    font-size: 14px;
+    line-height: 1.8;
+    color: var(--text-secondary);
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-family: var(--font-body);
+}
+
+.btn-copy {
+    margin-top: 12px;
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 10px 20px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 13px;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.btn-copy:hover {
+    background: var(--bg-card-hover);
+    color: var(--text-primary);
+    border-color: var(--primary);
+}
+
+/* ========================================
+   MODAL
+   ======================================== */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--overlay);
+    backdrop-filter: blur(8px);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-overlay.active { display: flex; }
+
+.modal-content {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 32px;
+    max-width: 480px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-content h3 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 22px;
+    margin-bottom: 20px;
+}
+
+.modal-content .form-group { margin-bottom: 14px; }
+.modal-content .form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+}
+
+.modal-content .form-group-checkbox label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+.modal-content .form-group-checkbox input[type="checkbox"] {
+    width: auto;
+    accent-color: #ffd700;
+}
+
+.modal-content .form-group input,
+.modal-content .form-group select {
+    width: 100%;
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    color: var(--text-primary);
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.modal-content .form-group input:focus,
+.modal-content .form-group select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(108, 43, 217, 0.2);
+}
+
+.modal-content .form-group select option { background: var(--bg-secondary); }
+
+.form-actions { display: flex; gap: 12px; margin-top: 20px; }
+.form-actions .btn-secondary { flex: 1; }
+.form-actions .btn-primary { flex: 2; }
+
+/* ========================================
+   TOAST
+   ======================================== */
+.toast {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    padding: 14px 24px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 2000;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: var(--shadow);
+}
+
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.success { border-color: #00cc44; }
+.toast.error { border-color: #ff3300; }
+.toast.info { border-color: var(--primary); }
+
+/* ========================================
+   BOTÃO DE DOWNLOAD DO CARD
+   ======================================== */
+.btn-download-card {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(0, 0, 0, 0.6);
+    border: none;
+    color: white;
+    padding: 6px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 10;
+}
+
+.card-esportivo:hover .btn-download-card { opacity: 1; }
+
+[data-theme="light"] .btn-download-card {
+    background: rgba(255, 255, 255, 0.8);
+    color: #1a1a2e;
+}
+
+/* ========================================
+   DISCLAIMER DOS CARDS
+   ======================================== */
+.card-disclaimer {
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid var(--card-border);
+    font-size: 9px;
+    opacity: 0.5;
+    text-align: center;
+    letter-spacing: 0.3px;
+    line-height: 1.4;
+}
+
+/* No tema claro, ajustar contraste */
+[data-theme="light"] .card-disclaimer {
+    opacity: 0.6;
+}
+
+/* ========================================
+   OUTROS CONTEÚDOS - painel de configuração
+   ======================================== */
+
+.outros-section .outros-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin: 12px 0 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.outros-section .outros-select,
+.outros-section #campeonatoConteudo {
+    width: 100%;
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    color: var(--text-primary);
+    font-size: 14px;
+    font-family: inherit;
+}
+
+.outros-section .outros-select:focus,
+.outros-section #campeonatoConteudo:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.outros-section .outros-descricao {
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: var(--text-muted);
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    margin: 12px 0;
+}
+
+.outros-section .btn-full {
+    margin-bottom: 10px;
+}
+
+/* ========================================
+   TABELA DE CLASSIFICAÇÃO - card gerado
+   ======================================== */
+
+.outros-conteudo-section {
+    margin-top: 24px;
+}
+
+.outros-conteudo-section .cards-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.tabela-card {
+    background: #0d0d10;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 16px;
+    padding: 28px 24px;
+    max-width: 900px;
+    margin: 0 auto;
+    font-family: var(--font-body);
+    color: #f4f4f5;
+    overflow-x: auto;
+}
+
+.tabela-titulo {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 30px;
+    letter-spacing: 1px;
+    color: #ffffff;
+    text-transform: uppercase;
+}
+
+.tabela-subtitulo {
+    font-size: 13px;
+    color: #9ca3af;
+    margin-bottom: 20px;
+}
+
+.tabela-header-row,
+.tabela-row {
+    display: grid;
+    grid-template-columns: 90px 1fr repeat(9, 46px);
+    align-items: center;
+    gap: 4px;
+    min-width: 640px;
+}
+
+.tabela-header-row {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: #6b7280;
+    text-transform: uppercase;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.tabela-header-row .tabela-col-stat,
+.tabela-header-row .tabela-col-pos {
+    text-align: center;
+}
+
+.tabela-row {
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.tabela-row:last-child {
+    border-bottom: none;
+}
+
+.tabela-col-pos {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tabela-pos {
+    font-weight: 700;
+    font-size: 16px;
+    min-width: 20px;
+}
+
+.tabela-variacao {
+    font-size: 11px;
+}
+
+.tabela-col-time {
+    font-weight: 600;
+    font-size: 14px;
+    color: #f4f4f5;
+    padding-right: 8px;
+}
+
+.tabela-col-stat {
+    text-align: center;
+    font-size: 13px;
+    color: #d1d5db;
+}
+
+.tabela-pontos {
+    font-weight: 800;
+    color: #ffffff;
+    font-size: 14px;
+}
+
+.tabela-legenda {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    font-size: 12px;
+    color: #9ca3af;
+}
+
+.tabela-legenda-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.tabela-legenda-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    display: inline-block;
+}
+
+.tabela-legenda-seta {
+    font-size: 12px;
+    font-weight: 700;
+}
+
+@media (max-width: 720px) {
+    .tabela-card {
+        padding: 20px 14px;
+    }
+}
+
+
+/* ========================================
+   PRÉVIA DA RODADA - card gerado
+   ======================================== */
+
+.previa-card {
+    background: #0d0d10;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 16px;
+    padding: 28px 24px;
+    max-width: 640px;
+    margin: 0 auto;
+    font-family: var(--font-body);
+    color: #f4f4f5;
+}
+
+.previa-titulo {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 26px;
+    letter-spacing: 1px;
+    color: #ff8800;
+    text-transform: uppercase;
+}
+
+.previa-subtitulo {
+    font-size: 13px;
+    color: #9ca3af;
+    margin-bottom: 18px;
+}
+
+.previa-jogo {
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.previa-jogo:last-child {
+    border-bottom: none;
+}
+
+.previa-data {
+    display: flex;
+    gap: 10px;
+    font-size: 11px;
+    color: #9ca3af;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.previa-hora {
+    color: #ff8800;
+    font-weight: 700;
+}
+
+.previa-confronto {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.previa-x {
+    color: #6b7280;
+    font-weight: 400;
+    font-size: 13px;
+}
+
+.previa-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: #9ca3af;
+}
+
+.previa-canal-badge {
+    border: 1px solid #ff8800;
+    color: #ff8800;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
