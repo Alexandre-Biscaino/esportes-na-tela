@@ -22,8 +22,5 @@ Sistema automatizado de agenda esportiva com IA - Gere cards premium para redes 
 4. Edite os eventos se necessário
 5. Gere os cards e compartilhe!
 
-## 🌐 Acesse
-[https://alexandre-biscaino.github.io/esportes-na-tela/](https://alexandre-biscaino.github.io/esportes-na-tela/)
-
 ## 📄 Licença
 MIT License
