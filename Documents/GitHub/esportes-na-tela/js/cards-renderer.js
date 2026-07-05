@@ -2,6 +2,24 @@
 // CARDS RENDERER - Renderização Premium
 // ========================================
 
+// Lê quais categorias estão marcadas no filtro acima dos cards
+function categoriasSelecionadas() {
+    const checkboxes = document.querySelectorAll('.filtro-categoria-item:checked');
+    return new Set(Array.from(checkboxes).map(cb => cb.value));
+}
+
+function secaoEstaSelecionada(secao) {
+    const selecionadas = categoriasSelecionadas();
+    if (secao.tipo === 'destaque') return selecionadas.has('destaque');
+    return selecionadas.has(secao.categoria);
+}
+
+// Marca/desmarca todas as categorias de uma vez (checkbox "Todos")
+function alternarTodasCategorias(marcar) {
+    document.querySelectorAll('.filtro-categoria-item').forEach(cb => { cb.checked = marcar; });
+    gerarCards();
+}
+
 function gerarCards() {
     const container = document.getElementById('cardsContainer');
     const creditos = document.getElementById('creditosInput').value || '@esportesnatela';
@@ -20,8 +38,19 @@ function gerarCards() {
         return;
     }
 
-    const secoes = organizarEmSecoes(eventos);
-    const dataAtual = formatarDataAtual();
+    const secoes = organizarEmSecoes(eventos).filter(secaoEstaSelecionada);
+
+    if (secoes.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 60px 20px; color: var(--text-muted);">
+                <div style="font-size: 48px; margin-bottom: 16px;">🗂️</div>
+                <h3 style="font-family: var(--font-display); font-size: 20px;">Nenhuma categoria selecionada</h3>
+                <p style="font-size: 14px;">Marque pelo menos uma categoria acima para gerar os cards.</p>
+            </div>
+        `;
+        gerarTextos();
+        return;
+    }
 
     let html = '';
 
@@ -31,13 +60,21 @@ function gerarCards() {
             ? `${secao.icone} ${escapeHTML(secao.titulo.toUpperCase())}`
             : `${secao.icone} ${escapeHTML(secao.titulo)}`;
         const classeTitulo = secao.titulo.length > 18 ? 'card-title titulo-compacto' : 'card-title';
+        const legendaIcones = montarLegendaIcones(secao.eventos);
+        const legendaHtml = legendaIcones.length > 0
+            ? `
+                <div class="card-legenda-esportes">
+                    ${legendaIcones.map(item => `<span class="legenda-esporte-item"><span class="legenda-esporte-icone">${item.icone}</span>${escapeHTML(item.nome)}</span>`).join('')}
+                </div>
+            `
+            : '';
 
         html += `
             <div class="card-esportivo ${temaClasse}" style="border-left: 4px solid ${secao.cor};">
                 <!-- CABEÇALHO: Ícone + Categoria + Data -->
                 <div class="card-header">
                     <span class="card-badge">${secao.badgeIcone} ${escapeHTML(secao.titulo.toUpperCase())}</span>
-                    <span class="card-date">${dataAtual}</span>
+                    <span class="card-date">${secao.dataFormatada || formatarDataAtual()}${ehDataFutura(secao.data) ? ' <span class="card-date-badge">AMANHÃ</span>' : ''}</span>
                 </div>
 
                 <!-- TÍTULO PRINCIPAL -->
@@ -45,8 +82,11 @@ function gerarCards() {
 
                 <!-- LISTA DE EVENTOS -->
                 <div class="card-events">
-                    ${secao.eventos.map(montarLinhaEvento).join('')}
+                    ${secao.eventos.map((evento) => montarLinhaEvento(evento, secao.icone)).join('')}
                 </div>
+
+                <!-- LEGENDA DOS ÍCONES: o que cada ícone de esporte significa -->
+                ${legendaHtml}
 
                 <!-- RODAPÉ -->
                 <div class="card-footer">
@@ -140,17 +180,21 @@ function gerarCards() {
 // esportes: hora + nome do evento em cima, canal de transmissão sempre
 // embaixo (largura total) — evita a inconsistência de um card mostrar o
 // canal do lado e outro embaixo dependendo do tamanho do texto.
-function montarLinhaEvento(evento) {
+// O nome do evento leva um ícone do esporte específico (ex: 🎾 pra tênis,
+// 🏐 pra vôlei) mesmo dentro de um card de categoria mais ampla como
+// "Quadras", que reúne vários esportes diferentes sob o mesmo ícone genérico.
+function montarLinhaEvento(evento, iconeCategoriaPadrao) {
     const canal = evento.canal || 'A confirmar';
     const hora = escapeHTML(evento.hora || '--:--');
     const nome = escapeHTML(evento.evento || '');
     const canalEsc = escapeHTML(canal);
+    const iconeEvento = iconePorPrioridade(evento, iconeCategoriaPadrao || '');
 
     return `
         <div class="event-line">
             <div class="event-line-top">
                 <span class="event-time">${hora}</span>
-                <span class="event-name" data-evento-nome="${nome}">${nome}</span>
+                <span class="event-name" data-evento-nome="${nome}" data-evento-icone="${iconeEvento}">${iconeEvento ? `<span class="event-icone">${iconeEvento}</span>` : ''}${nome}</span>
             </div>
             <span class="event-channel-badge">${canalEsc}</span>
         </div>

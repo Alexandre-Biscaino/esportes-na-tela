@@ -29,6 +29,8 @@ function salvarJogo(event) {
 
     const id = document.getElementById('editId').value;
     const hora = document.getElementById('jogoHora').value.trim();
+    const dataInput = document.getElementById('jogoData');
+    const data = dataInput && dataInput.value ? dataInput.value : dataParaISO(new Date());
     const evento = document.getElementById('jogoEvento').value.trim();
     const campeonato = document.getElementById('jogoCampeonato').value.trim();
     const canal = document.getElementById('jogoCanal').value.trim();
@@ -58,6 +60,7 @@ function salvarJogo(event) {
         // a partir do nome do campeonato/evento.
         prioridade: inferirPrioridade(campeonato, evento),
         destaque,
+        data,
         fonte: jogoExistente ? jogoExistente.fonte : 'Manual',
         fonteUrl: jogoExistente ? (jogoExistente.fonteUrl || '') : ''
     };
@@ -97,7 +100,7 @@ function renderizarJogos() {
     container.innerHTML = jogos.map(jogo => `
         <div class="event-item" data-id="${jogo.id}">
             <div class="event-info">
-                <span class="event-time">${escapeHTML(jogo.hora)}</span>
+                <span class="event-time">${escapeHTML(jogo.hora)}${typeof ehDataFutura === 'function' && ehDataFutura(jogo.data) ? ' <span class="tag-amanha">amanhã</span>' : ''}</span>
                 <span class="event-name">${jogo.destaque ? '🏆 ' : ''}${escapeHTML(jogo.evento)}</span>
                 <span class="event-channel">📺 ${escapeHTML(jogo.canal)} • ${escapeHTML(jogo.categoria)}</span>
                 <a href="${escapeHTML(montarLinkVerificacao(jogo))}" target="_blank" rel="noopener noreferrer" class="link-verificar">
@@ -139,6 +142,8 @@ function editarJogo(id) {
 
     document.getElementById('editId').value = jogo.id;
     document.getElementById('jogoHora').value = jogo.hora;
+    const dataInput = document.getElementById('jogoData');
+    if (dataInput) dataInput.value = jogo.data || dataParaISO(new Date());
     document.getElementById('jogoEvento').value = jogo.evento;
     document.getElementById('jogoCampeonato').value = jogo.campeonato;
     document.getElementById('jogoCanal').value = jogo.canal;
@@ -163,6 +168,8 @@ function limparEventos() {
 function abrirModalJogo() {
     document.getElementById('editId').value = '';
     document.getElementById('jogoHora').value = '';
+    const dataInput = document.getElementById('jogoData');
+    if (dataInput) dataInput.value = dataParaISO(new Date());
     document.getElementById('jogoEvento').value = '';
     document.getElementById('jogoCampeonato').value = '';
     document.getElementById('jogoCanal').value = '';

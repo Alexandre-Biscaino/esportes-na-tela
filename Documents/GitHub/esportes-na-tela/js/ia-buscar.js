@@ -30,6 +30,52 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
+// Buscar tudo numa chamada só sobrecarrega o orçamento de pesquisas do
+// grounding (a IA só faz um punhado de buscas por chamada) e deixa a
+// cobertura incompleta. Por isso a busca é dividida em grupos menores,
+// cada um com sua própria chamada — bem mais completo.
+// Série C e D têm sua própria busca dedicada porque costumam ter muito mais
+// jogos simultâneos por rodada (espalhados por canais regionais do YouTube)
+// do que a Série A/B, e uma busca genérica "futebol nacional" não se
+// aprofundava o suficiente nelas.
+const GRUPOS_BUSCA = [
+    { nome: 'Futebol Série A e B', esportes: 'Futebol brasileiro: Brasileirão Série A e Série B' },
+    { nome: 'Futebol Série C, D e Estaduais', esportes: 'Futebol brasileiro: Série C, Série D, Copa do Brasil, e a primeira divisão dos principais estaduais (SP, RJ, MG, RS, BA, PR, SC, PE, CE etc.). ATENÇÃO: essas divisões costumam ter MUITOS jogos na mesma rodada (10 a 20 jogos), espalhados por vários canais regionais no YouTube — procure ativamente a lista COMPLETA da rodada, não pare nos primeiros 2-3 jogos que encontrar.' },
+    { nome: 'Futebol Internacional', esportes: 'Futebol internacional: Copa do Mundo, Libertadores, Sul-Americana, Champions League, Eliminatórias, jogos de seleções, principais ligas europeias quando envolverem brasileiros ou grande repercussão' },
+    { nome: 'Motor', esportes: 'Fórmula 1, Fórmula Indy, MotoGP, Stock Car' },
+    { nome: 'Quadras', esportes: 'NBA, NBB, Vôlei (Superliga e seleções), Tênis (ATP, WTA, Grand Slams), Futsal (LNF e seleções)' },
+    { nome: 'Combate e NFL', esportes: 'NFL, UFC, MMA, Boxe' }
+];
+
+// Roda as tarefas com um limite de chamadas simultâneas (em vez de todas de
+// uma vez), pra não estourar limite de requisições por minuto da API do Gemini.
+async function executarComLimite(tarefas, limite, fn) {
+    const resultados = new Array(tarefas.length);
+    let indice = 0;
+
+    async function worker() {
+        while (indice < tarefas.length) {
+            const meuIndice = indice++;
+            try {
+                resultados[meuIndice] = { status: 'fulfilled', value: await fn(tarefas[meuIndice]) };
+            } catch (erro) {
+                resultados[meuIndice] = { status: 'rejected', reason: erro };
+            }
+        }
+    }
+
+    const workers = Array.from({ length: Math.min(limite, tarefas.length) }, worker);
+    await Promise.all(workers);
+    return resultados;
+}
+
+function dataParaISO(data) {
+    const ano = data.getFullYear();
+    const mes = String(data.getMonth() + 1).padStart(2, '0');
+    const dia = String(data.getDate()).padStart(2, '0');
+    return `${ano}-${mes}-${dia}`;
+}
+
 // Buscar eventos com IA
 async function buscarComIA() {
     if (!apiKey) {
@@ -43,12 +89,49 @@ async function buscarComIA() {
 
     const statusEl = document.getElementById('statusIA');
     statusEl.className = 'status-message loading';
-    statusEl.textContent = '🔄 Buscando eventos esportivos de hoje com IA + Google Search...';
+
+    // Monta a lista de datas-alvo a partir do seletor "Buscar eventos de"
+    const diaBuscaEl = document.getElementById('diaBusca');
+    const diaBusca = diaBuscaEl ? diaBuscaEl.value : 'hoje';
+
+    const hoje = new Date();
+    const amanha = new Date(hoje);
+    amanha.setDate(amanha.getDate() + 1);
+
+    const datasAlvo = [];
+    if (diaBusca === 'hoje' || diaBusca === 'ambos') datasAlvo.push(hoje);
+    if (diaBusca === 'amanha' || diaBusca === 'ambos') datasAlvo.push(amanha);
+
+    const tarefas = [];
+    for (const dataAlvo of datasAlvo) {
+        for (const grupo of GRUPOS_BUSCA) {
+            tarefas.push({ grupo, dataAlvo });
+        }
+    }
+
+    statusEl.textContent = `🔄 Buscando eventos em ${tarefas.length} buscas (por esporte${datasAlvo.length > 1 ? ' e por dia' : ''})... isso pode levar um minuto.`;
     statusEl.style.display = 'block';
 
     try {
-        const resultado = await chamarGemini();
-        const eventosBrutos = resultado.eventos;
+        // No máximo 3 chamadas simultâneas — completo, mas sem estourar limite de requisições por minuto
+        const resultados = await executarComLimite(tarefas, 3, (tarefa) => chamarGemini(tarefa.grupo, tarefa.dataAlvo));
+
+        let eventosBrutos = [];
+        let falhas = 0;
+        let parseFalhouEmAlgum = false;
+
+        resultados.forEach((r, i) => {
+            if (r.status === 'fulfilled') {
+                const dataISO = dataParaISO(tarefas[i].dataAlvo);
+                const comData = r.value.eventos.map((e) => ({ ...e, data: dataISO }));
+                eventosBrutos = eventosBrutos.concat(comData);
+                if (r.value.parseFalhou) parseFalhouEmAlgum = true;
+            } else {
+                falhas++;
+                console.warn(`[IA Buscar] Falha na busca de "${tarefas[i].grupo.nome}" (${tarefas[i].dataAlvo.toLocaleDateString('pt-BR')}):`, r.reason);
+            }
+        });
+
         const eventosValidos = filtrarEventosIndesejados(eventosBrutos);
         const descartados = eventosBrutos.length - eventosValidos.length;
 
@@ -57,8 +140,10 @@ async function buscarComIA() {
             for (const evento of eventosValidos) {
                 if (!evento.evento || !evento.campeonato) continue;
 
-                const existe = jogos.some(j => eventosSaoIguais(j, evento));
+                const existe = jogos.some(j => eventosSaoIguais(j, evento) && j.data === evento.data);
                 if (existe) continue;
+
+                const prioridade = normalizarPrioridade(evento.prioridade, evento.campeonato, evento.evento);
 
                 jogos.push({
                     id: Date.now().toString() + Math.random().toString(36).substr(2, 4),
@@ -67,10 +152,11 @@ async function buscarComIA() {
                     campeonato: evento.campeonato || 'Campeonato',
                     canal: evento.canal || 'A confirmar',
                     tipo: ['tv-aberta', 'tv-fechada', 'streaming', 'youtube'].includes(evento.tipo) ? evento.tipo : 'tv-aberta',
-                    categoria: CATEGORIAS_ORDEM.includes(evento.categoria) ? evento.categoria : 'Outros',
-                    prioridade: evento.prioridade || inferirPrioridade(evento.campeonato, evento.evento),
+                    categoria: categoriaPorPrioridade(prioridade),
+                    prioridade,
                     destaque: !!evento.destaque,
                     fonteUrl: (typeof evento.fonteUrl === 'string' && evento.fonteUrl.startsWith('http')) ? evento.fonteUrl : '',
+                    data: evento.data,
                     fonte: 'IA - Gemini'
                 });
                 adicionados++;
@@ -85,18 +171,21 @@ async function buscarComIA() {
                 ? `✅ ${adicionados} novos eventos encontrados e adicionados!`
                 : 'ℹ️ A IA encontrou eventos, mas todos já estavam na sua lista.';
             if (descartados > 0) {
-                msg += ` (${descartados} descartado(s): categoria de base, divisão inferior ou canal não confirmado)`;
+                msg += ` (${descartados} descartado(s): categoria de base, divisão inferior, canal não confirmado ou evento genérico)`;
+            }
+            if (falhas > 0) {
+                msg += ` ⚠️ ${falhas} de ${tarefas.length} buscas falharam — rode de novo se quiser tentar completar.`;
             }
             statusEl.textContent = msg;
-        } else if (resultado.parseFalhou) {
+        } else if (parseFalhouEmAlgum) {
             statusEl.className = 'status-message error';
-            statusEl.textContent = '⚠️ A IA respondeu, mas o formato não pôde ser interpretado. Abra o console do navegador (F12) para ver a resposta bruta — geralmente ajuda ajustar o prompt.';
+            statusEl.textContent = '⚠️ A IA respondeu, mas o formato não pôde ser interpretado em pelo menos uma busca. Abra o console do navegador (F12) para ver a resposta bruta.';
         } else if (descartados > 0) {
             statusEl.className = 'status-message error';
-            statusEl.textContent = `⚠️ A IA encontrou ${descartados} evento(s), mas todos foram descartados (categoria de base, divisão inferior ou canal não confirmado).`;
+            statusEl.textContent = `⚠️ A IA encontrou ${descartados} evento(s), mas todos foram descartados (categoria de base, divisão inferior, canal não confirmado ou evento genérico).`;
         } else {
             statusEl.className = 'status-message error';
-            statusEl.textContent = '⚠️ Nenhum evento encontrado para hoje. Tente novamente mais tarde ou adicione manualmente.';
+            statusEl.textContent = '⚠️ Nenhum evento encontrado. Tente novamente mais tarde ou adicione manualmente.';
         }
     } catch (error) {
         console.error('Erro na busca com IA:', error);
@@ -108,12 +197,13 @@ async function buscarComIA() {
 
     setTimeout(() => {
         statusEl.style.display = 'none';
-    }, 10000);
+    }, 15000);
 }
 
-// Chamar API Gemini com grounding no Google Search
-async function chamarGemini() {
-    const prompt = construirPrompt();
+// Chamar API Gemini com grounding no Google Search, para um grupo de
+// esportes e uma data específicos (cada grupo/dia é uma chamada independente)
+async function chamarGemini(grupo, dataAlvo) {
+    const prompt = construirPrompt(grupo, dataAlvo);
 
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
@@ -139,7 +229,7 @@ async function chamarGemini() {
                 // Respostas com grounding tendem a ser mais longas (o modelo
                 // processa trechos de busca antes de responder), por isso o
                 // limite é mais folgado que o de uma chamada sem ferramentas.
-                maxOutputTokens: 8192
+                maxOutputTokens: 16384
             }
         })
     });
@@ -165,53 +255,60 @@ async function chamarGemini() {
     return processarResposta(texto);
 }
 
-// Construir prompt para a IA
-function construirPrompt() {
-    const dataAtual = new Date().toLocaleDateString('pt-BR', {
+// Construir prompt para a IA — focado num grupo de esportes e numa data
+// específica (cada busca cobre só isso, o que deixa a cobertura bem mais
+// completa do que tentar tudo numa chamada só)
+function construirPrompt(grupo, dataAlvo) {
+    const dataFormatada = dataAlvo.toLocaleDateString('pt-BR', {
         weekday: 'long',
         day: 'numeric',
         month: 'long',
         year: 'numeric'
     });
+    const ehHoje = dataParaISO(dataAlvo) === dataParaISO(new Date());
+    const referenciaDia = ehHoje ? 'HOJE' : 'nessa data específica (não hoje)';
 
     return `
-        Você é um assistente especializado em buscar programação esportiva para o dia de hoje (${dataAtual}).
+        Você é um assistente especializado em buscar programação esportiva para uma data específica: ${dataFormatada}.
         Use a ferramenta de busca do Google para consultar fontes reais e atuais. Não responda de memória.
 
-        Sua tarefa: Encontrar eventos esportivos que acontecerão HOJE, com horários (horário de Brasília) e canais de transmissão.
+        Sua tarefa: Encontrar eventos esportivos que acontecerão em ${dataFormatada} (${referenciaDia}), com horários
+        (horário de Brasília) e canais de transmissão. NÃO retorne eventos de outros dias.
 
-        Esportes para buscar:
-        - Futebol (Série A, B, C, D, Estaduais, Copa do Brasil, torneios internacionais como Copa do Mundo, Libertadores, Champions League)
-        - Fórmula 1, Fórmula Indy, MotoGP, Stock Car
-        - NBA, NBB
-        - NFL
-        - UFC / MMA
-        - Tênis (ATP, WTA, Grand Slams)
-        - Vôlei (Superliga, seleções)
-        - Futsal (LNF, seleções)
+        Esportes para buscar NESTA busca (ignore outros esportes — eles são cobertos em buscas separadas):
+        ${grupo.esportes}
 
         Fontes obrigatórias para consultar (em ordem de prioridade):
         1. cbf.com.br — agenda e transmissão oficial de Série A, B, C, D e Copa do Brasil
         2. ge.globo.com — seção "onde assistir" / "guia de jogos" (curadoria editorial, alta confiabilidade)
         3. mantosdofutebol.com.br/guia-de-jogos-tv-hoje-ao-vivo — guia diário consolidado de jogos na TV
-        4. goal.com/br — programação completa de futebol na TV
-        5. espn.com.br, ge.globo.com/tv-e-streaming
-        6. sportv.globo.com, premiere.globo.com, tntsports.com.br (Champions League/HBO Max), primevideo.com
-        7. band.uol.com.br
-        8. grandepremio.com.br / motorsport.com (F1, Indy, MotoGP, Stock Car)
-        9. ufc.com.br
-        10. nba.com/brasil, nfl.com/brasil
-        11. cbv.com.br, lnb.com.br
-        12. uol.com.br/esporte — guia diário com programação de diversos esportes
-        13. torcedores.com — notícias e guia de programação esportiva
-        14. lance.com.br — guia "Onde Assistir" com agenda diária de jogos
+        4. futnatv.net/futebol — guia semanal MUITO completo, geralmente com a lista inteira da rodada
+           (inclusive Série C e D); acesse essa página específica, não só a home do site
+        5. futebolnatv.com.br — guia diário jogo a jogo com horário e onde assistir
+        6. goal.com/br — programação completa de futebol na TV
+        7. espn.com.br, ge.globo.com/tv-e-streaming
+        8. sportv.globo.com, premiere.globo.com, tntsports.com.br (Champions League/HBO Max), primevideo.com
+        9. band.uol.com.br
+        10. grandepremio.com.br / motorsport.com (F1, Indy, MotoGP, Stock Car)
+        11. ufc.com.br, paramountplus.com/br
+        12. nba.com/brasil, nfl.com/brasil
+        13. cbv.com.br, lnb.com.br
+        14. uol.com.br/esporte — guia diário com programação de diversos esportes
+        15. torcedores.com — notícias e guia de programação esportiva
+        16. lance.com.br — guia "Onde Assistir" com agenda diária de jogos
+        17. youtube.com/c/CBFSTV, youtube.com/lnfoficial, youtube.com/@nbboficial, youtube.com/user/VoleiBrasil1,
+            youtube.com/@MetropolesEsportes, youtube.com/@sportynet — canais regionais que costumam transmitir
+            Série C, D e estaduais menores
+
+        IMPORTANTE SOBRE EXAUSTIVIDADE: se a divisão pesquisada tiver muitos jogos na mesma rodada (comum em
+        Série C, Série D e estaduais), retorne TODOS os jogos que você encontrar nas fontes, não só os 2-3
+        mais visíveis. Times pequenos/pouco conhecidos são igualmente válidos, desde que o canal esteja confirmado.
 
         Canais/plataformas atuais a considerar (não se limite a essa lista, mas ela cobre os principais):
-        - TV aberta: Globo, SBT, Record, Band, RedeTV!, Xsports, N Sports (FAST), TV Cultura
+        - TV aberta: Globo, SBT, Record, Band, RedeTV!, Xsports, N Sports (FAST), TV Cultura, TV Brasil
         - TV fechada: SporTV, Premiere, ESPN, TNT Sports, N Sports, XSports, Fox Sports
-        - Streaming: Globoplay, GE TV, Amazon Prime Video, Disney+, HBO Max, Star+, DAZN, UOL Play, Zapping
+        - Streaming: Globoplay, GE TV, Amazon Prime Video, Disney+, HBO Max, Star+, DAZN, UOL Play, Zapping, Paramount+
         - YouTube/gratuito: CazéTV, GOAT BR, One Football, Sportynet, N Sports, Desimpedidos
-        
 
         REGRAS CRÍTICAS PARA CANAIS DE FUTEBOL:
         - Cada divisão/campeonato tem um pacote de transmissão DIFERENTE. NÃO copie o canal de uma divisão para outra.
@@ -231,7 +328,19 @@ function construirPrompt() {
         - Qualquer jogo cuja transmissão você não conseguiu confirmar com uma fonte real.
         - Foque nos jogos de maior relevância/audiência do dia: Série A/B/C/D nacional, primeira divisão dos
           principais estaduais (SP, RJ, MG, RS, BA etc.), competições internacionais (Copa do Mundo, Libertadores,
-          Champions League, Copa do Brasil, Europa League, Conference League, Copa Sulamericana) e os outros esportes já listados acima.
+          Champions League, Copa do Brasil) e os outros esportes já listados acima.
+
+        REGRA CRÍTICA: CADA EVENTO PRECISA SER UM JOGO/PARTIDA/CORRIDA ESPECÍFICA, NÃO UMA MENÇÃO GENÉRICA:
+        - Para esportes de confronto (futebol, NBA, NBB, vôlei, tênis, futsal, NFL, UFC/MMA/boxe), o campo
+          "evento" precisa nomear os dois competidores (ex: "Fernanda x Amanda") ou indicar claramente uma fase
+          específica (ex: "Final", "Semifinal", "Jogo 3"). NUNCA retorne uma menção solta ao torneio inteiro
+          como se fosse um evento — isso não informa nada de útil pra quem for assistir.
+        - Exemplos REAIS de "eventos" ERRADOS que já foram gerados por engano (NÃO faça isso):
+          "Pelas Quadras de Wimbledon", "Torneio de Wimbledon de Tênis 2026" — essas frases não dizem quem
+          está jogando, não são um evento specific, são só uma referência genérica ao campeonato.
+        - Exemplo CORRETO para o mesmo cenário: "Alcaraz x Sinner - Final", ou "Bia Haddad x Swiatek - 3ª rodada".
+        - Se você não conseguir identificar os competidores específicos de uma partida em uma fonte real,
+          NÃO invente o evento — simplesmente não o inclua na lista.
 
         REGRA SOBRE DESTAQUE:
         - Marque "destaque": true APENAS para partidas/eventos de grande relevância que merecem um card próprio,
@@ -262,9 +371,9 @@ function construirPrompt() {
         use "" (string vazia) — nunca invente uma URL.
 
         Tipos de canal:
-        - TV aberta: Globo, SBT, Record, Band, RedeTV!, Xsports, N Sports (FAST), TV Cultura
+        - TV aberta: Globo, SBT, Record, Band, RedeTV!, Xsports, N Sports (FAST), TV Cultura, TV Brasil
         - TV fechada: SporTV, Premiere, ESPN, TNT Sports, N Sports, XSports, Fox Sports
-        - Streaming: Globoplay, GE TV, Amazon Prime Video, Disney+, HBO Max, Star+, DAZN, UOL Play, Zapping
+        - Streaming: Globoplay, GE TV, Amazon Prime Video, Disney+, HBO Max, Star+, DAZN, UOL Play, Zapping, Paramount+
         - YouTube/gratuito: CazéTV, GOAT BR, One Football, Sportynet, N Sports, Desimpedidos, canais oficiais
 
         Categorias válidas (use exatamente um destes valores em "categoria"):
@@ -274,7 +383,14 @@ function construirPrompt() {
         - Combate: UFC, MMA, Boxe
         - Outros: demais esportes
 
-        IMPORTANTE: Se você não encontrar eventos reais para hoje nas fontes pesquisadas, retorne um array vazio [].
+        Valores válidos para "prioridade" (use EXATAMENTE um destes, sempre em minúsculo, sem
+        variações como "atp"/"wta"/"fiba" — isso é usado para escolher o ícone certo do evento):
+        f1, indy, motogp, stockcar, nba, nbb, volei, tenis, futsal, nfl, futebol, basquete, copa, mma, boxe, outros
+        (use "basquete" para jogos de seleções/torneios internacionais que não sejam especificamente NBA ou NBB,
+        como Copa do Mundo de Basquete ou Jogos Olímpicos; use "copa" para torneios internacionais de futebol
+        como Copa do Mundo, Libertadores, Champions League)
+
+        IMPORTANTE: Se você não encontrar eventos reais para essa data nas fontes pesquisadas, retorne um array vazio [].
         Não invente eventos, horários ou canais. Apenas retorne o que encontrar de fato.
 
         FORMATO DA RESPOSTA FINAL (muito importante):
@@ -282,7 +398,7 @@ function construirPrompt() {
         - NÃO inclua marcadores de citação/fonte (como [1], [2], [cbf.com.br]) nem qualquer texto,
           comentário ou explicação antes ou depois do array. Isso quebra a leitura automática do sistema.
 
-        Agora, pesquise e retorne os eventos esportivos para HOJE (${dataAtual}).
+        Agora, pesquise e retorne os eventos de ${grupo.nome} para ${dataFormatada}.
     `;
 }
 

@@ -470,6 +470,17 @@ body {
     gap: 2px;
 }
 .event-item .event-time { font-weight: 600; font-size: 13px; color: var(--text-primary); }
+.event-item .tag-amanha {
+    display: inline-block;
+    background: var(--primary);
+    color: #fff;
+    font-size: 8px;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 1px 5px;
+    border-radius: 3px;
+    vertical-align: middle;
+}
 .event-item .event-name { font-size: 12px; color: var(--text-secondary); }
 .event-item .event-channel { font-size: 11px; color: var(--text-muted); }
 
@@ -652,6 +663,20 @@ body {
     font-weight: 400;
 }
 
+.card-esportivo .card-date-badge {
+    display: inline-block;
+    background: var(--primary);
+    color: #fff;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    opacity: 1;
+    margin-left: 4px;
+    vertical-align: middle;
+}
+
 .card-esportivo .card-title {
     font-family: var(--font-display);
     font-weight: 700;
@@ -724,6 +749,32 @@ body {
     opacity: 0.5;
     font-size: 12px;
     flex-shrink: 0;
+}
+
+.card-esportivo .event-icone {
+    flex-shrink: 0;
+    font-size: 14px;
+}
+
+.card-esportivo .card-legenda-esportes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 14px;
+    margin-top: 4px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--card-border);
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.card-esportivo .legenda-esporte-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.card-esportivo .legenda-esporte-icone {
+    font-size: 12px;
 }
 
 /* Canal de transmissão como badge/pill, sempre na linha de baixo — padrão
@@ -1308,4 +1359,34 @@ body {
     font-size: 11px;
     font-weight: 600;
     white-space: nowrap;
+}
+
+.cards-section .filtro-categorias-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 16px;
+    padding: 10px 0 16px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.cards-section .filtro-categorias-cards label {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.cards-section .filtro-categorias-cards input[type="checkbox"] {
+    accent-color: var(--primary);
+    cursor: pointer;
+}
+
+.cards-section .filtro-categorias-cards label:first-child {
+    font-weight: 700;
+    padding-right: 8px;
+    border-right: 1px solid var(--border-color);
 }

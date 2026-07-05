@@ -49,6 +49,12 @@
                     <button class="btn-secondary" onclick="salvarApiKey()">Salvar</button>
                 </div>
                 <div class="quick-actions">
+                    <label class="outros-label" style="margin-top: 0;">Buscar eventos de:</label>
+                    <select id="diaBusca" class="outros-select" style="margin-bottom: 10px;">
+                        <option value="hoje">Hoje</option>
+                        <option value="amanha">Amanhã</option>
+                        <option value="ambos">Hoje e amanhã</option>
+                    </select>
                     <button class="btn-primary btn-full" onclick="buscarComIA()">
                         🔍 Buscar eventos com IA
                     </button>
@@ -76,6 +82,7 @@
                     <input type="checkbox" id="toggleEscudos" onchange="alternarEscudos()" style="width: auto; accent-color: var(--primary); margin-right: 6px;" />
                     🖼️ Mostrar escudos dos times (beta, via Wikipédia)
                 </label>
+                <a href="#" onclick="limparCacheEscudos(); return false;" class="link-verificar" style="margin-top: 6px;">🗑️ Limpar cache de escudos</a>
             </section>
 
             <!-- Lista de Eventos -->
@@ -131,6 +138,15 @@
                         <input type="text" id="creditosInput" value="@esportesnatela" />
                     </div>
                 </div>
+                <div class="filtro-categorias-cards">
+                    <label><input type="checkbox" id="filtroTodos" checked onchange="alternarTodasCategorias(this.checked)" /> Todos</label>
+                    <label><input type="checkbox" class="filtro-categoria-item" value="destaque" checked onchange="gerarCards()" /> 🏆 Destaques</label>
+                    <label><input type="checkbox" class="filtro-categoria-item" value="Motor" checked onchange="gerarCards()" /> 🏎️ Motor</label>
+                    <label><input type="checkbox" class="filtro-categoria-item" value="Quadras" checked onchange="gerarCards()" /> 🏀 Quadras</label>
+                    <label><input type="checkbox" class="filtro-categoria-item" value="Campo" checked onchange="gerarCards()" /> ⚽ Campo</label>
+                    <label><input type="checkbox" class="filtro-categoria-item" value="Combate" checked onchange="gerarCards()" /> 🥊 Combate</label>
+                    <label><input type="checkbox" class="filtro-categoria-item" value="Outros" checked onchange="gerarCards()" /> 🎯 Outros</label>
+                </div>
                 <div id="cardsContainer" class="cards-container"></div>
             </div>
 
@@ -171,6 +187,10 @@
                 <div class="form-group">
                     <label>Hora</label>
                     <input type="text" id="jogoHora" placeholder="Ex: 15h00" required />
+                </div>
+                <div class="form-group">
+                    <label>Data</label>
+                    <input type="date" id="jogoData" required />
                 </div>
                 <div class="form-group">
                     <label>Evento</label>

@@ -15,7 +15,10 @@ function gerarTextos() {
     }
 
     const secoes = organizarEmSecoes(eventos);
-    const dataAtual = formatarDataAtual();
+    const datasDistintas = [...new Set(secoes.map(s => s.data))].filter(Boolean).sort();
+    const dataAtual = datasDistintas.length > 1
+        ? 'Hoje e amanhã'
+        : (secoes[0]?.dataFormatada || formatarDataAtual());
 
     const textos = {
         whatsapp: gerarTextoWhatsApp(secoes, dataAtual, creditos),
@@ -78,10 +81,20 @@ function copiarTexto() {
 // GERADORES DE TEXTO POR REDE SOCIAL
 // ========================================
 
-// Monta o corpo comum (lista de seções/eventos) reaproveitado por todas as redes
+// Monta o corpo comum (lista de seções/eventos) reaproveitado por todas as redes.
+// Quando a busca cobre mais de um dia (hoje + amanhã), insere um subtítulo de
+// data toda vez que a seção muda de dia — as seções já vêm ordenadas por data.
 function construirCorpoTexto(secoes, negrito) {
     let corpo = '';
+    let dataAnterior = null;
+
     for (const secao of secoes) {
+        if (secao.data && secao.data !== dataAnterior) {
+            const rotulo = ehDataFutura(secao.data) ? `${secao.dataFormatada} (AMANHÃ)` : secao.dataFormatada;
+            corpo += negrito ? `\n*📅 ${rotulo}*\n\n` : `\n📅 ${rotulo}\n\n`;
+            dataAnterior = secao.data;
+        }
+
         const tituloSecao = secao.tipo === 'destaque'
             ? `${secao.icone} ${secao.titulo.toUpperCase()}`
             : `${secao.icone} ${secao.titulo}`;

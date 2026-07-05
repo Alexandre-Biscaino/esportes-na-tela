@@ -9,25 +9,49 @@
 // menores pode não ser (às vezes é o estádio, um jogador etc.) — por isso
 // é uma função opcional (checkbox), não fica ligada por padrão.
 
-const ESCUDO_CACHE_PREFIX = 'escudoCache:';
+// Importante: o prefixo tem uma versão (v2). Sempre que a lógica de busca do
+// escudo mudar de um jeito que pode ter corrigido resultados errados
+// anteriores (como aconteceu aqui — times ambíguos tipo "Tubarão" traziam a
+// imagem errada), aumentar essa versão invalida o cache antigo automaticamente,
+// sem precisar cada pessoa limpar o localStorage manualmente.
+const ESCUDO_CACHE_PREFIX = 'escudoCache:v3:';
 const ESCUDO_CACHE_DIAS = 14;
 
 function normalizarChaveTime(nome) {
     return normalizarTexto(nome);
 }
 
-// Consulta a API pública da Wikipédia (REST, sem chave, com CORS liberado)
+// Palavras que indicam que a página da Wikipédia é realmente sobre um
+// time/clube ESPORTIVO específico. Importante: evitar palavras genéricas
+// demais como "clube" ou "equipe" sozinhas — um "clube náutico" (de vela)
+// também usa a palavra "clube", e isso já causou imagem errada pra times
+// com nomes ambíguos ("Tubarão", "Náutico"). Exigimos o nome do esporte
+// em si, não só "é algum tipo de clube".
+const PALAVRAS_CONTEXTO_ESPORTIVO = [
+    'futebol', 'futsal', 'basquete', 'basquetebol', 'volei', 'handebol',
+    'clube de futebol', 'agremiacao de futebol', 'time de futebol'
+];
+
+function pareceTimeEsportivo(data) {
+    const texto = normalizarTexto(`${data.description || ''} ${data.extract || ''}`);
+    return PALAVRAS_CONTEXTO_ESPORTIVO.some((p) => texto.includes(p));
+}
+
+// Consulta a API pública da Wikipédia (REST, sem chave, com CORS liberado).
+// Só aceita a imagem se a página encontrada realmente parecer ser sobre um
+// time/clube esportivo (ver pareceTimeEsportivo) — caso contrário, descarta
+// e tenta a próxima variação do nome, em vez de arriscar uma foto errada.
 async function consultarWikipediaResumo(nomeTime) {
-    const tentativas = [nomeTime, `${nomeTime} (futebol)`, `${nomeTime} (clube de futebol)`];
+    const tentativas = [`${nomeTime} (futebol)`, `${nomeTime} (clube de futebol)`, `${nomeTime} (basquete)`, nomeTime];
 
     for (const termo of tentativas) {
         try {
             const resp = await fetch(`https://pt.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(termo)}`);
             if (!resp.ok) continue;
             const data = await resp.json();
-            if (data.thumbnail && data.thumbnail.source) {
-                return data.thumbnail.source;
-            }
+            if (!data.thumbnail || !data.thumbnail.source) continue;
+            if (!pareceTimeEsportivo(data)) continue; // provavelmente página errada (cidade, animal etc.)
+            return data.thumbnail.source;
         } catch (e) {
             // tenta a próxima variação do nome
         }
@@ -111,8 +135,14 @@ async function carregarEscudosVisiveis() {
                 ? `<img src="${url}" class="escudo-time" alt="" loading="lazy" crossorigin="anonymous" onerror="this.remove()" />`
                 : '';
 
+            // Preserva o ícone do esporte (ex: 🎾) que já estava na frente do
+            // nome do evento, em vez de sobrescrever tudo ao adicionar os escudos.
+            const icone = el.dataset.eventoIcone
+                ? `<span class="event-icone">${el.dataset.eventoIcone}</span>`
+                : '';
+
             el.innerHTML = `
-                ${imgHtml(urlA)}<span class="time-nome">${times[0]}</span>
+                ${icone}${imgHtml(urlA)}<span class="time-nome">${times[0]}</span>
                 <span class="evento-x">x</span>
                 ${imgHtml(urlB)}<span class="time-nome">${times[1]}</span>
             `;
@@ -124,5 +154,15 @@ async function carregarEscudosVisiveis() {
 
 // Liga/desliga escudos e re-renderiza os cards
 function alternarEscudos() {
+    if (typeof gerarCards === 'function') gerarCards();
+}
+
+// Limpa manualmente o cache de escudos salvos no navegador — útil se algum
+// time específico ficou com uma imagem errada em cache e você não quer
+// esperar os 14 dias, ou não quer esperar uma atualização de versão do sistema.
+function limparCacheEscudos() {
+    const chaves = Object.keys(localStorage).filter((k) => k.startsWith(ESCUDO_CACHE_PREFIX));
+    chaves.forEach((k) => localStorage.removeItem(k));
+    mostrarToast(`🗑️ Cache de escudos limpo (${chaves.length} time(s)). Gerando cards de novo...`, 'info');
     if (typeof gerarCards === 'function') gerarCards();
 }

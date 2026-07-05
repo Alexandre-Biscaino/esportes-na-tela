@@ -147,6 +147,10 @@ function restaurarModal() {
                     <input type="text" id="jogoHora" placeholder="Ex: 15h00" required />
                 </div>
                 <div class="form-group">
+                    <label>Data</label>
+                    <input type="date" id="jogoData" required />
+                </div>
+                <div class="form-group">
                     <label>Evento</label>
                     <input type="text" id="jogoEvento" placeholder="Ex: GP de Mônaco - Classificação" required />
                 </div>
@@ -203,28 +207,14 @@ document.addEventListener('DOMContentLoaded', function() {
 // ========================================
 // FUNÇÃO PARA FECHAR MODAL (GLOBAL)
 // ========================================
-
-function fecharModal() {
-    const modal = document.getElementById('modalJogo');
-    if (modal) {
-        modal.classList.remove('active');
-    }
-}
+// Implementação vive em jogos-manager.js (idêntica, removida a duplicata aqui)
 
 // ========================================
 // FUNÇÃO PARA ABRIR MODAL (GLOBAL)
 // ========================================
-
-function abrirModalJogo() {
-    const modal = document.getElementById('modalJogo');
-    if (modal) {
-        // Resetar formulário
-        const form = document.getElementById('formJogo');
-        if (form) form.reset();
-        document.getElementById('editId').value = '';
-        modal.classList.add('active');
-    }
-}
+// A implementação completa vive em jogos-manager.js — havia uma duplicata
+// aqui que sobrescrevia a de lá (por carregar depois) e não preenchia a
+// data padrão do novo campo "Data", deixando o formulário inválido.
 
 // ========================================
 // EXPORTAÇÃO DE FUNÇÕES GLOBAIS
@@ -253,4 +243,6 @@ window.gerarOutroConteudo = gerarOutroConteudo;
 window.baixarOutroConteudo = baixarOutroConteudo;
 window.atualizarTipoConteudo = atualizarTipoConteudo;
 window.alternarEscudos = alternarEscudos;
+window.limparCacheEscudos = limparCacheEscudos;
+window.alternarTodasCategorias = alternarTodasCategorias;
 window.salvarApiDadosUrl = salvarApiDadosUrl;
